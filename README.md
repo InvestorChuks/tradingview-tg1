@@ -20,3 +20,21 @@ This is a lightweight Flask backend that receives TradingView webhook alerts and
 
 Use the following URL in your TradingView alerts:
 https://tradingview-tg1.onrender.com
+
+## Webhook Message Format (JSON)
+
+```json
+{
+  "ticker": "{{ticker}}",
+  "timeframe": "15m",
+  "signal": "{{strategy.order.comment}}"
+}
+
+## Sample Telegram Output
+Signal Alert
+Pair: BTCUSDT
+Timeframe: 15m
+Signal: Buy Signal
+
+## License
+MIT
