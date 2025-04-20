@@ -1,44 +1,54 @@
-from fastapi import FastAPI, Request
-import httpx
+import json
+import logging
+from flask import Flask, request
+import requests
 import os
-from dotenv import load_dotenv
 
-load_dotenv()
+app = Flask(__name__)
 
-app = FastAPI()
+# Load your configuration (e.g., list of coins)
+with open("config.json", "r") as f:
+    coin_config = json.load(f)["coins"]
 
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+# Telegram Config
+TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")
+TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
 
-async def send_telegram_message(message):
-    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+logging.basicConfig(level=logging.INFO)
+
+def send_telegram_message(message):
+    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
     payload = {
         "chat_id": TELEGRAM_CHAT_ID,
         "text": message,
         "parse_mode": "Markdown"
     }
-
-    async with httpx.AsyncClient() as client:
-        await client.post(url, json=payload)
-
-@app.get("/")
-async def root():
-    return {"message": "Bot is alive."}
-
-@app.post("/webhook")
-async def webhook(request: Request):
     try:
-        data = await request.json()
-
-        pair = data.get("pair", "Unknown Pair")
-        timeframe = data.get("timeframe", "Unknown Timeframe")
-        signal = data.get("signal", "Unknown Signal")
-
-        message = f"**TradingView Alert**\nPair: `{pair}`\nTimeframe: `{timeframe}`\nSignal: *{signal}*"
-        await send_telegram_message(message)
-
-        return {"message": "Alert sent to Telegram"}
-
+        response = requests.post(url, json=payload)
+        if response.status_code != 200:
+            logging.error("Telegram send failed: %s", response.text)
     except Exception as e:
-        print(f"Error: {e}")
-        return {"error": str(e)}
+        logging.exception("Exception sending Telegram message: %s", str(e))
+
+@app.route("/alert", methods=["POST"])
+def handle_alert():
+    try:
+        data = request.get_json(force=True)
+        signal = data.get("signal", "No Signal")
+        ticker = data.get("ticker", "Unknown")
+        timeframe = data.get("timeframe", "Unknown")
+        
+        message = f"*Signal Alert*\nPair: `{ticker}`\nTimeframe: `{timeframe}`\nSignal: `{signal}`"
+        send_telegram_message(message)
+        return {"status": "ok"}, 200
+    except Exception as e:
+        logging.exception("Error handling alert")
+        return {"error": str(e)}, 500
+
+@app.route("/", methods=["GET"])
+def home():
+    return "Backend is Live!", 200
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
