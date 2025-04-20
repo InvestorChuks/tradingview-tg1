@@ -7,6 +7,12 @@ app = Flask(__name__)
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
+# List of pairs you're monitoring (ensure this list matches your alert format)
+pairs_to_scan = [
+    "BTC/USDT", "ETH/USDT", "XRP/USDT", "SOL/USDT", "ADA/USDT",  # Add up to 100 pairs
+    # ...
+]
+
 @app.route("/", methods=["GET"])
 def home():
     return "Bot is running!"
@@ -18,12 +24,18 @@ def webhook():
         if not data:
             return "No JSON data received", 400
 
-        if isinstance(data, dict) and "message" in data:
-            message = data["message"]
-        else:
-            message = str(data)
+        # Extract alert message
+        message = data.get("message", "")
+        if not message:
+            return "No message found in the alert", 400
 
-        send_telegram_message(message)
+        # Loop through pairs and find the one that matches in the alert
+        for pair in pairs_to_scan:
+            if pair in message:
+                # Send the alert message to Telegram with the correct pair information
+                send_telegram_message(f"Alert for {pair}: {message}")
+                break
+
         return "Alert received and sent", 200
 
     except Exception as e:
