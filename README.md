@@ -1,43 +1,22 @@
+# TradingView Alerts to Telegram Bot
 
-# TradingView Telegram Scanner
+This is a lightweight Flask backend that receives TradingView webhook alerts and forwards them to a Telegram group or channel.
 
-This app receives alerts from TradingView and sends them to a Telegram bot.
+## How It Works
 
-## Setup
+1. TradingView sends a POST webhook to this backend.
+2. The backend parses the message and relays it to a Telegram chat via bot API.
 
-1. Clone the repo and install dependencies:
+## Deploying to Render
 
-```bash
-pip install -r requirements.txt
-```
+- Create a new **Web Service** from this GitHub repo
+- Use **Python 3.x** runtime
+- Add environment variables:
+  - `TELEGRAM_TOKEN`: Bot token from @BotFather
+  - `TELEGRAM_CHAT_ID`: Chat ID of your target group/channel
+- Render will auto-detect the `Procfile` and run `python main.py`
 
-2. Set environment variables:
+## Webhook URL
 
-- `TELEGRAM_TOKEN`: Your Telegram bot token
-- `TELEGRAM_CHAT_ID`: Your Telegram chat ID
-
-3. Run the app:
-
-```bash
-python app.py
-```
-
-## Deployment
-
-Deploy on Railway, Render, or Replit. Use `/webhook` as the endpoint for TradingView alerts.
-
-## TradingView Alert Format
-
-Set the webhook URL in your alert like:
-
-```
-https://your-deployment-url/webhook
-```
-
-Then use this in the alert message:
-
-```json
-{
-  "message": "🔔 Alert: {{ticker}} {{interval}} - Buy Signal!"
-}
-```
+Use the following URL in your TradingView alerts:
+https://tradingview-tg1.onrender.com
