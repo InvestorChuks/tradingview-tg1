@@ -9,7 +9,7 @@ TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
 @app.post("/webhook")
-async def webhook(request: Request):
+async def webhook(request: request):
     try:
         data = await request.json()
 
