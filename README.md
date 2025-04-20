@@ -23,12 +23,13 @@ https://tradingview-tg1.onrender.com
 
 ## Webhook Message Format (JSON)
 
-```json
+   json
 {
   "ticker": "{{ticker}}",
   "timeframe": "15m",
   "signal": "{{strategy.order.comment}}"
-}
+} 
+
 
 ## Sample Telegram Output
 Signal Alert
